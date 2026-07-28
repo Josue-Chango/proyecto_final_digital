@@ -1,0 +1,204 @@
+================================================================================
+  REFRIGERADORA MODERNA TFT — DOCUMENTACIÓN COMPLETA PARA IA
+  Última actualización: v5.0
+================================================================================
+
+1. DESCRIPCIÓN DEL PROYECTO
+--------------------------------------------------------------------------------
+Simulación de una refrigeradora moderna con display TFT ILI9341 (240x320) en
+SimulIDE 1.1.0, controlada por Arduino Mega 2560. Versión mejorada del proyecto
+original que usaba LCD HD44780.
+
+Funcionalidades:
+  - Pantalla de temperatura con indicador de compresor y modo congelador
+  - Reloj en tiempo real (HH:MM:SS) con per-digit update
+  - Temporizador configurable (hasta 99 minutos)
+  - Pantalla de humedad y estado general
+  - Alarma de puerta abierta con buzzer progresivo
+  - Modo congelador (setpoint <= 0°C)
+  - Paisaje de fondo rústico (cielo, sol, nubes, montañas, césped, camino)
+  - Actualización parcial de pantalla (SIN parpadeo/flickering)
+
+2. PINES — ARDUINO MEGA 2560
+--------------------------------------------------------------------------------
+  FUNCIÓN          PIN ARDUINO    NOTAS
+  ──────────────── ────────────── ─────────────────────────────
+  TFT_SCK          52             SPI clock (Mega, NO es 11)
+  TFT_MOSI         51             SPI data (Mega, NO es 13)
+  TFT_CS           10             Chip Select del ILI9341
+  TFT_DC           9              Data/Command del ILI9341
+  TFT_RST          8              Reset del ILI9341
+  ──────────────── ────────────── ─────────────────────────────
+  TEMP_POT_PIN     A0             Potenciómetro de temperatura
+  DOOR_SENSOR      A1             Switch de puerta (INPUT_PULLUP)
+  SETPOINT_PIN     A2             Potenciómetro de setpoint
+  HUMIDITY_PIN     A3             Potenciómetro de humedad
+  ──────────────── ────────────── ─────────────────────────────
+  RELAY_PIN        30             Relay del compresor
+  BUZZER_PIN       31             Buzzer/alarma
+  LIGHT_PIN        32             LED luz interior
+  COMP_LED         33             LED indicador compresor
+  FREEZE_LED       34             LED indicador modo congelador
+  ──────────────── ────────────── ─────────────────────────────
+  BTN_UP           40             Botón arriba (INPUT_PULLUP)
+  BTN_DOWN         41             Botón abajo (INPUT_PULLUP)
+  BTN_OK           42             Botón OK/enter (INPUT_PULLUP)
+  BTN_BACK         43             Botón volver (INPUT_PULLUP)
+
+  ⚠ IMPORTANTE: En el Arduino Mega 2560 los pines SPI son 51 (MOSI) y
+    52 (SCK), NO 11 y 13 como en el Arduino Uno.
+
+3. PIN IDs EN SimulIDE 1.1.0 (ILI9341)
+--------------------------------------------------------------------------------
+Los IDs de los pines del componente ILI9341 en SimulIDE 1.1.0 son:
+  - PinSck    (SCK, mayúscula la "ck")
+  - PinMosi   (MOSI, mayúscula la "si")
+  - PinCS     (CS, mayúscula la "S")
+  - PinDC     (DC, mayúscula la "C")
+  - PinRst    (RST, mayúscula la "st")
+
+⚠ OJO: SimulIDE 1.1.0 parece auto-cambiar estos IDs al guardar el .sim1.
+  Si no conectan, abrir el XML y verificar/reescribir los IDs manualmente.
+
+4. LIBRERÍAS NECESEARIAS
+--------------------------------------------------------------------------------
+  ✅ Adafruit_GFX        v1.12.6   — Gráficos generales
+  ✅ Adafruit_ILI9341     v1.6.3    — Driver del display ILI9341
+  ✅ Adafruit BusIO       v1.17.4   — Dependencia interna de Adafruit
+  ✅ SPI                  (built-in)— Comunicación SPI del Arduino
+
+  ❌ Arduino TFT.h                  — NO funciona en SimulIDE 1.1.0
+                                     (usa SPI de forma incompatible)
+
+  Instalados con: arduino-cli lib install "Adafruit_GFX" etc.
+
+5. ARDUINO-CLI — RUTA Y COMPILACIÓN
+--------------------------------------------------------------------------------
+Ruta del arduino-cli embebido en Arduino IDE:
+  C:\Users\Josue\AppData\Local\Programs\Arduino IDE\resources\app\lib\backend\resources\arduino-cli.exe
+
+Comando de compilación:
+  & "C:\Users\Josue\AppData\Local\Programs\Arduino IDE\resources\app\lib\backend\resources\arduino-cli.exe" compile --fqbn arduino:avr:mega:cpu=atmega2560 "C:\Users\Josue\Documents\GitHub\proyecto_final_digital\RefrigeradoraModerna_TFT"
+
+Salida esperada: build/RefrigeradoraModerna_TFT.ino.hex
+Tamaño actual v5.0: ~26824 bytes flash (10%), 1118 bytes RAM (13%)
+
+6. ARCHIVOS DEL PROYECTO
+--------------------------------------------------------------------------------
+RefrigeradoraModerna_TFT/
+  RefrigeradoraModerna_TFT.ino     — Sketch principal v5.0
+  RefrigeradoraModerna_TFT.sim1    — Circuito SimulIDE 1.1.0
+  build/
+    RefrigeradoraModerna_TFT.ino.hex — Hex compilado
+
+test_tft_simple/
+  test_tft_simple.ino              — Test simple (confirmado funcional)
+  test_tft_simple.sim1             — Circuito de test
+  build/
+    test_tft_simple.ino.hex        — Hex del test
+
+RefrigeradoraModerna/              — Proyecto original LCD (referencia)
+  RefrigeradoraModerna.ino
+RefrigeradoraModerna.sim1          — Circuito LCD original (referencia)
+
+7. ESTRUCTURA DEL CÓDIGO (v5.0)
+--------------------------------------------------------------------------------
+El sketch usa un patrón de "enter + update" para cada pantalla:
+
+  CADA PANTALLA TIENE:
+    enterXxx()   → Dibuja elementos estáticos (títulos, decoración)
+    updateXxx()  → Actualiza SOLO los valores que cambiaron
+
+  VARIABLES PREVIAS (prev*):
+    Se comparan contra el valor actual. Solo se redibuja si hay cambio.
+    Ejemplo: prevTemp, prevClkH, prevClkM, prevClkS, prevCooling, etc.
+
+  PANTALLAS:
+    menuPage 0 → Temperatura    (enterTemp / updateTemp)
+    menuPage 1 → Reloj          (enterClock / updateClock)
+    menuPage 2 → Temporizador   (enterTimer / updateTimer)
+    menuPage 3 → Humedad        (enterHumidity / updateHumidity)
+    menuPage 4 → Sub: Ajustar setpoint (menuSetpoint)
+    menuPage 5 → Sub: Ajustar reloj   (menuSetClock)
+    menuPage 6 → Sub: Ajustar timer   (menuSetTimer)
+
+  FONDO:
+    drawBackground() se llama UNA VEZ al cambiar de pantalla principal.
+    Dibuja: cielo azul, sol, nubes, montañas, césped, suelo, camino.
+
+  RELOJ:
+    Actualización por dígito individual (cada dígito tiene su posición x fija).
+    Posiciones para textSize=4 (cada char = 24px):
+      HH en x=24, ':' en x=48, MM en x=72, ':' en x=120, SS en x=144
+
+8. QUIRKS DE SimulIDE 1.1.0
+--------------------------------------------------------------------------------
+  - NO abre archivos .sim2 (solo .sim1)
+  - Al guardar .sim1, SimulIDE puede:
+    * Eliminar el atributo Program="" del ArduinoMega2560
+    * Cambiar el MainCompId del circuito
+    * Modificar IDs de pines de componentes
+  - El hex path en el .sim1 debe ser ruta ABSOLUTA:
+    C:/Users/Josue/Documents/GitHub/proyecto_final_digital/
+    RefrigeradoraModerna_TFT/build/RefrigeradoraModerna_TFT.ino.hex
+  - Para reprogramar: editar .sim1 con texto, reinsertar Program="ruta/hex"
+    y re-verificar PinSck/PinMosi/PinCS/PinDC/PinRst
+
+9. PARÁMETROS DE CALIBRACIÓN
+--------------------------------------------------------------------------------
+  HISTERESIS        = 0.5°C   (diferencia ON/OFF del compresor)
+  DEB_MS            = 180ms   (debounce de botones)
+  LOG_MS            = 1000ms  (intervalo de log serial)
+  DOOR_WARN_MS      = 10000ms (umbral puerta: antes lento, después rápido)
+  Temp range        = -10°C a +40°C (mapeado de potenciómetro A0)
+  Setpoint range    = -10°C a +15°C (ajustable con botones o pot A2)
+  Timer max         = 99:00 (5940 segundos)
+  Modo congelador   = cuando targetTemp <= 0°C
+
+10. COLORES RGB565 UTILIZADOS
+--------------------------------------------------------------------------------
+  BLACK    0x0000    WHITE    0xFFFF    RED      0xF800
+  GREEN    0x07E0    BLUE     0x001F    CYAN     0x07FF
+  YELLOW   0xFFE0    ORANGE   0xFD20    MAGENTA  0xF81F
+  DARKGREY 0x4208    LGREY    0xC618    DBLUE    0x0811
+  LBLUE    0x5D9C    SKYBLUE  0x867F    GROUND   0x5460
+  GROUND2  0x6B8D    SAND     0xD6B0
+
+11. CÓMO MODIFICAR
+--------------------------------------------------------------------------------
+  AGREGAR PANTALLA:
+    1. Agregar case en switch de menuPage (loop principal)
+    2. Crear enterXxx() y updateXxx()
+    3. Agregar variable prevXxx correspondiente
+
+  CAMBIAR COLORES:
+    Definir macro RGB565 al inicio del .ino
+
+  CAMBIAR PINES:
+    Modificar #defines de TFT y constantes de pines
+    Actualizar conexiones en el .sim1
+
+  CAMBIAR FONDO:
+    Modificar drawBackground()
+
+  AJUSTAR PARÁMETROS:
+    Modificar constantes HISTERESIS, DEB_MS, etc.
+
+12. REFERENCIA: CIRCUITO .sim1 SIMPLIFICADO
+--------------------------------------------------------------------------------
+El .sim1 es XML de SimulIDE. Componentes principales:
+  - ArduinoMega2560 (con atributo Program="ruta/hex")
+  - ILI9341 (con pines PinSck, PinMosi, PinCS, PinDC, PinRst)
+  - 4× PushBotton (BTN_UP, BTN_DOWN, BTN_OK, BTN_BACK)
+  - 3× Potenciomenter (TEMP, SETPOINT, HUMIDITY)
+  - 1× Switch (DOOR_SENSOR)
+  - 2× Leds (COMP_LED, FREEZE_LED)
+  - 1× PiezoBuzzer
+  - 5× led_rojo → led verde como indicadores (COMP, LIGHT, FREEZE, etc.)
+
+  IMPORTANTE: Usar led_rojo o led_verde, NO "LED" (componente no disponible
+  en SimulIDE 1.1.0). Verificar en el XML qué componentes existen.
+
+================================================================================
+  FIN DE DOCUMENTACIÓN
+================================================================================

@@ -1,0 +1,109 @@
+<circuit version="1.1.0-SR2" rev="260312" stepSize="1000000" stepsPS="1000000" NLsteps="100000" reaStep="1000000" animate="0" >
+
+<item itemtype="Subcircuit" CircId="Mega-1" mainComp="false" Show_id="true" Show_Val="false" Pos="-200,0" rotation="0" hflip="1" vflip="1" label="Arduino_Mega_2560" idLabPos="0,-20" labelrot="0" valLabPos="0,0" valLabRot="0" Logic_Symbol="false">
+<mainCompProps MainCompId="mega2560-63" Frequency="16 MHz" Program="build/RefrigeradoraModerna_TFT.ino.hex" Auto_Load="true" saveEepr="true" MainMcu="true" SerialMon="-1" />
+</item>
+
+<item itemtype="Ili9341" CircId="Ili9341-1" mainComp="false" Show_id="false" Show_Val="false" Pos="168,-272" rotation="270" hflip="1" vflip="1" label="TFT_ILI9341" idLabPos="70,-82" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Push" CircId="Push-1" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,-200" rotation="0" hflip="1" vflip="1" label="PUERTA" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+
+<item itemtype="Push" CircId="Push-2" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,60" rotation="0" hflip="1" vflip="1" label="BTN_UP" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+
+<item itemtype="Push" CircId="Push-3" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,140" rotation="0" hflip="1" vflip="1" label="BTN_DOWN" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+
+<item itemtype="Push" CircId="Push-4" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,220" rotation="0" hflip="1" vflip="1" label="BTN_OK" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+
+<item itemtype="Push" CircId="Push-5" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,300" rotation="0" hflip="1" vflip="1" label="BTN_BACK" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+
+<item itemtype="Potentiometer" CircId="Pot-1" mainComp="false" ShowProp="Resistance" Show_id="true" Show_Val="true" Pos="-560,-120" rotation="0" hflip="1" vflip="1" label="Temp_Pot" idLabPos="0,-32" labelrot="0" valLabPos="-16,20" valLabRot="0" Resistance="10 kOhm" Value_Ohm="3000 Ohm" Slider="false" Scale="1" />
+
+<item itemtype="Potentiometer" CircId="Pot-2" mainComp="false" ShowProp="Resistance" Show_id="true" Show_Val="true" Pos="-440,-120" rotation="0" hflip="1" vflip="1" label="Setpoint_Pot" idLabPos="0,-32" labelrot="0" valLabPos="-16,20" valLabRot="0" Resistance="10 kOhm" Value_Ohm="5000 Ohm" Slider="false" Scale="1" />
+
+<item itemtype="Potentiometer" CircId="Pot-3" mainComp="false" ShowProp="Resistance" Show_id="true" Show_Val="true" Pos="-320,-120" rotation="0" hflip="1" vflip="1" label="Humedad_Pot" idLabPos="0,-32" labelrot="0" valLabPos="-16,20" valLabRot="0" Resistance="10 kOhm" Value_Ohm="5000 Ohm" Slider="false" Scale="1" />
+
+<item itemtype="Led" CircId="Led-1" mainComp="false" Show_id="false" Show_Val="false" Pos="320,-120" rotation="-180" hflip="1" vflip="1" label="Luz_Interna" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="White" Grounded="true" Threshold="2.4 V" MaxCurrent="30 mA" Resistance="0.6 Ohm" />
+
+<item itemtype="Led" CircId="Led-2" mainComp="false" Show_id="false" Show_Val="false" Pos="320,-40" rotation="-180" hflip="1" vflip="1" label="Compresor" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Red" Grounded="true" Threshold="2.4 V" MaxCurrent="30 mA" Resistance="0.6 Ohm" />
+
+<item itemtype="Led" CircId="Led-3" mainComp="false" Show_id="false" Show_Val="false" Pos="320,40" rotation="-180" hflip="1" vflip="1" label="Congelador" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Blue" Grounded="true" Threshold="2.4 V" MaxCurrent="30 mA" Resistance="0.6 Ohm" />
+
+<item itemtype="Led" CircId="Led-4" mainComp="false" Show_id="false" Show_Val="false" Pos="320,120" rotation="-180" hflip="1" vflip="1" label="Buzzer_Ind" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Yellow" Grounded="true" Threshold="2.4 V" MaxCurrent="30 mA" Resistance="0.6 Ohm" />
+
+<item itemtype="Resistor" CircId="Resistor-1" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="256,-120" rotation="0" hflip="1" vflip="1" label="R_Luz" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="220 Ohm" />
+
+<item itemtype="Resistor" CircId="Resistor-2" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="256,-40" rotation="0" hflip="1" vflip="1" label="R_Comp" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="220 Ohm" />
+
+<item itemtype="Resistor" CircId="Resistor-3" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="256,40" rotation="0" hflip="1" vflip="1" label="R_Frz" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="220 Ohm" />
+
+<item itemtype="Resistor" CircId="Resistor-4" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="256,120" rotation="0" hflip="1" vflip="1" label="R_Buz" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="100 Ohm" />
+
+<item itemtype="Fixed Voltage" CircId="FV-1" mainComp="false" Show_id="false" Show_Val="true" Pos="-700,-116" rotation="0" hflip="1" vflip="1" label="VCC_Temp" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Fixed Voltage" CircId="FV-2" mainComp="false" Show_id="false" Show_Val="true" Pos="-620,-152" rotation="0" hflip="1" vflip="1" label="VCC_Set" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Fixed Voltage" CircId="FV-3" mainComp="false" Show_id="false" Show_Val="true" Pos="-476,-160" rotation="0" hflip="1" vflip="1" label="VCC_Hum" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="false" />
+
+<item itemtype="Ground" CircId="Ground-2" mainComp="false" Show_id="false" Show_Val="false" Pos="-636,-200" rotation="0" hflip="1" vflip="1" label="GND_Door" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="Ground-3" mainComp="false" Show_id="false" Show_Val="false" Pos="-636,60" rotation="0" hflip="1" vflip="1" label="GND_BtnUp" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="Ground-4" mainComp="false" Show_id="false" Show_Val="false" Pos="-636,140" rotation="0" hflip="1" vflip="1" label="GND_BtnDn" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="Ground-5" mainComp="false" Show_id="false" Show_Val="false" Pos="-636,220" rotation="0" hflip="1" vflip="1" label="GND_BtnOk" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="Ground-6" mainComp="false" Show_id="false" Show_Val="false" Pos="-636,300" rotation="0" hflip="1" vflip="1" label="GND_BtnBk" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="GND-P1" mainComp="false" Show_id="false" Show_Val="false" Pos="-700,-60" rotation="0" hflip="1" vflip="1" label="GND_Temp" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="GND-P2" mainComp="false" Show_id="false" Show_Val="false" Pos="-580,-200" rotation="0" hflip="1" vflip="1" label="GND_Set" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Ground" CircId="GND-P3" mainComp="false" Show_id="false" Show_Val="false" Pos="-460,-200" rotation="0" hflip="1" vflip="1" label="GND_Hum" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Connector" uid="tft-sck" startpinid="Mega-1-52" endpinid="Ili9341-1-PinSck" pointList="-64,24,-208,24,-208,344,396,344,396,-248,352,-248" />
+
+<item itemtype="Connector" uid="tft-mosi" startpinid="Mega-1-51" endpinid="Ili9341-1-PinMosi" pointList="-72,16,-200,16,-200,328,388,328,388,-240,352,-240" />
+
+<item itemtype="Connector" uid="tft-rst" startpinid="Mega-1-8" endpinid="Ili9341-1-PinRst" pointList="-192,192,-176,192,-176,280,372,280,372,-224,352,-224" />
+
+<item itemtype="Connector" uid="tft-dc" startpinid="Mega-1-9" endpinid="Ili9341-1-PinDC" pointList="-192,200,-184,200,-184,296,380,296,380,-232,352,-232" />
+
+<item itemtype="Connector" uid="tft-cs" startpinid="Mega-1-10" endpinid="Ili9341-1-PinCS" pointList="-192,208,-192,312,352,312,352,-216" />
+
+<item itemtype="Connector" uid="door-signal" startpinid="Push-1-switch0pinN" endpinid="Mega-1-A1" pointList="-544,-200,-100,-200,-100,160,-48,160" />
+
+<item itemtype="Connector" uid="door-gnd" startpinid="Push-1-pinP0" endpinid="Ground-2-Gnd" pointList="-576,-200,-636,-200,-636,-216" />
+
+<item itemtype="Connector" uid="btn-up-sig" startpinid="Push-2-switch0pinN" endpinid="Mega-1-40" pointList="-544,60,-108,60,-108,24,-112,24" />
+
+<item itemtype="Connector" uid="btn-up-gnd" startpinid="Push-2-pinP0" endpinid="Ground-3-Gnd" pointList="-576,60,-636,60,-636,44" />
+
+<item itemtype="Connector" uid="btn-dn-sig" startpinid="Push-3-switch0pinN" endpinid="Mega-1-41" pointList="-544,140,-116,140,-116,16,-112,16" />
+
+<item itemtype="Connector" uid="btn-dn-gnd" startpinid="Push-3-pinP0" endpinid="Ground-4-Gnd" pointList="-576,140,-636,140,-636,124" />
+
+<item itemtype="Connector" uid="btn-ok-sig" startpinid="Push-4-switch0pinN" endpinid="Mega-1-42" pointList="-544,220,-124,220,-124,24,-104,24" />
+
+<item itemtype="Connector" uid="btn-ok-gnd" startpinid="Push-4-pinP0" endpinid="Ground-5-Gnd" pointList="-576,220,-636,220,-636,204" />
+
+<item itemtype="Connector" uid="btn-bk-sig" startpinid="Push-5-switch0pinN" endpinid="Mega-1-43" pointList="-544,300,-132,300,-132,16,-104,16" />
+
+<item itemtype="Connector" uid="btn-bk-gnd" startpinid="Push-5-pinP0" endpinid="Ground-6-Gnd" pointList="-576,300,-636,300,-636,284" />
+
+<item itemtype="Connector" uid="luz-sig" startpinid="Mega-1-32" endpinid="Resistor-1-lPin" pointList="-144,24,200,24,200,-120,240,-120" />
+
+<item itemtype="Connector" uid="luz-led" startpinid="Resistor-1-rPin" endpinid="Led-1-lPin" pointList="272,-120,336,-120" />
+
+<item itemtype="Connector" uid="comp-sig" startpinid="Mega-1-33" endpinid="Resistor-2-lPin" pointList="-144,16,192,16,192,-40,240,-40" />
+
+<item itemtype="Connector" uid="comp-led" startpinid="Resistor-2-rPin" endpinid="Led-2-lPin" pointList="272,-40,336,-40" />
+
+<item itemtype="Connector" uid="frz-sig" startpinid="Mega-1-34" endpinid="Resistor-3-lPin" pointList="-136,24,184,24,184,40,240,40" />
+
+<item itemtype="Connector" uid="frz-led" startpinid="Resistor-3-rPin" endpinid="Led-3-lPin" pointList="272,40,336,40" />
+
+<item itemtype="Connector" uid="buz-sig" startpinid="Mega-1-31" endpinid="Resistor-4-lPin" pointList="-152,16,176,16,176,120,240,120" />
+
+<item itemtype="Connector" uid="buz-led" startpinid="Resistor-4-rPin" endpinid="Led-4-lPin" pointList="272,120,336,120" />
+
+</circuit>

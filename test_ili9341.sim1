@@ -1,0 +1,13 @@
+<circuit version="1.1.0-SR2" rev="260312" stepSize="1000000" stepsPS="1000000" NLsteps="100000" reaStep="1000000" animate="0" >
+<item itemtype="Subcircuit" CircId="Mega-1" mainComp="false" Show_id="true" Show_Val="false" Pos="-200,0" rotation="0" hflip="1" vflip="1" label="Mega-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false">
+<mainCompProps MainCompId="mega2560-2" Frequency="16 MHz" Program="" Auto_Load="false" saveEepr="false" SerialMon="-1" />
+</item>
+<item itemtype="Ili9341" CircId="Ili9341-1" mainComp="false" Show_id="true" Show_Val="false" Pos="200,-220" rotation="0" hflip="1" vflip="1" label="Ili9341-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+<item itemtype="Push" CircId="Push-1" mainComp="false" Show_id="true" Show_Val="false" Pos="-560,-200" rotation="0" hflip="1" vflip="1" label="Push-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
+<item itemtype="Resistor" CircId="Resistor-1" mainComp="false" Show_id="true" Show_Val="true" Pos="256,-120" rotation="0" hflip="1" vflip="1" label="Resistor-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Resistance="220 Ohm" ShowProp="Resistance" />
+<item itemtype="Led" CircId="Led-1" mainComp="false" Show_id="true" Show_Val="false" Pos="320,-120" rotation="0" hflip="1" vflip="1" label="Led-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Red" Grounded="true" Threshold="2.4 V" MaxCurrent="30 mA" Resistance="0.6 Ohm" />
+<item itemtype="Potentiometer" CircId="Pot-1" mainComp="false" Show_id="true" Show_Val="true" Pos="-560,-120" rotation="0" hflip="1" vflip="1" label="Pot-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Resistance="10 kOhm" ShowProp="Resistance" />
+<item itemtype="Fixed Voltage" CircId="FV-1" mainComp="false" Show_id="true" Show_Val="true" Pos="-700,-100" rotation="0" hflip="1" vflip="1" label="FV-1" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" Voltage="5 V" Out="true" />
+<item itemtype="Ground" CircId="Ground-2" mainComp="false" Show_id="true" Show_Val="false" Pos="-636,-200" rotation="0" hflip="1" vflip="1" label="Ground-2" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+</circuit>
