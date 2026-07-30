@@ -174,16 +174,35 @@ void tickTimer() {
 
 // ─── Pantallas de lectura ─────────────────────────────────────
 void showTemp() {
-  // Fila 0: Temperatura actual
+  char tbuf[6]; 
+
   lcd.setCursor(0, 0);
   if (freezeMode) {
-    lcd.write(1); lcd.print("CONGELADOR ");
-    lcd.print(currentTemp, 1); lcd.write(byte(0)); lcd.print(" ");
+    dtostrf(currentTemp, 5, 1, tbuf);
+    lcd.write(1); lcd.print("CONG:");     
+    lcd.print(tbuf);                       
+    lcd.write(byte(0));                    
+    lcd.print("    ");                      
   } else {
-    lcd.print("T:"); lcd.print(currentTemp, 1); lcd.write(byte(0));
-    lcd.print("C "); lcd.write(byte(7)); lcd.print(cooling ? "ON " : "OFF");
-    lcd.print("     ");
+    dtostrf(currentTemp, 5, 1, tbuf);
+    lcd.print("T:"); lcd.print(tbuf);       
+    lcd.write(byte(0));                      
+    lcd.print("C"); lcd.write(byte(7));     
+    lcd.print(cooling ? "ON " : "OFF");      
+    lcd.print("  ");                         
   }
+
+  lcd.setCursor(0, 1);
+  if (doorOpen) {
+    lcd.print("!PUERTA ABIERTA!");            
+  } else {
+    dtostrf(targetTemp, 5, 1, tbuf);
+    lcd.print("SP:"); lcd.print(tbuf);        
+    lcd.write(byte(0));                       
+    lcd.print("C");                          
+    lcd.print(cooling ? "[ENFR]" : "[OK]  "); 
+  }
+}
 
   // Fila 1: Setpoint o alarma puerta
   lcd.setCursor(0, 1);
@@ -199,7 +218,7 @@ void showTemp() {
 void showClock() {
   // Fila 0: etiqueta
   lcd.setCursor(0, 0);
-  lcd.write(4); lcd.print("    RELOJ       ");
+  lcd.write(4); lcd.print("    RELOJ      ");
   // Fila 1: HH:MM:SS centrado
   lcd.setCursor(0, 1);
   lcd.print("    ");
@@ -211,29 +230,35 @@ void showClock() {
 
 void showTimer() {
   lcd.setCursor(0, 0);
-  lcd.write(3); lcd.print(" TEMPORIZADOR   ");
+  lcd.write(3); lcd.print(" TEMPORIZADOR  ");
   lcd.setCursor(0, 1);
   if (timerDone) {
     lcd.print("  ** LISTO! **  ");
   } else if (timerOn) {
     uint16_t m = timerLeft / 60, s = timerLeft % 60;
     lcd.print("  "); p2(m); lcd.print(':'); p2(s);
-    lcd.print(" Corriendo  ");
+    lcd.print("Corriendo");
   } else {
     uint16_t m = timerSet / 60, s = timerSet % 60;
     lcd.print("  "); p2(m); lcd.print(':'); p2(s);
-    lcd.print(" [Parado]   ");
+    lcd.print(" [Parado]");
   }
 }
 
 void showHumidity() {
+  char hbuf[4];
+  sprintf(hbuf, "%3d", (int)humidity);
+
   lcd.setCursor(0, 0);
-  lcd.write(2); lcd.print("Hum:"); lcd.print((int)humidity);
-  lcd.print("% "); lcd.print(freezeMode ? "[FREEZE]" : "[FRIDGE]");
+  lcd.write(2); lcd.print("H:"); lcd.print(hbuf);
+  lcd.print("%"); lcd.print(freezeMode ? "[FREEZE]" : "[FRIDGE]");
+  lcd.print(" "); 
+
   lcd.setCursor(0, 1);
-  lcd.print(cooling ? "COMP:ON " : "COMP:OFF");
-  lcd.print(doorOpen ? " PTA:ABT" : " PTA:CER");
-  lcd.print(timerOn ? " T" : "  ");
+  lcd.print(cooling ? "C:ON " : "C:OFF");
+  lcd.print(doorOpen ? "P:ABT" : "P:CER");
+  lcd.print(timerOn ? "T:ON " : "T:OFF");
+  lcd.print(" "); 
 }
 
 // ─── Sub-menús de configuración ───────────────────────────────
