@@ -86,8 +86,6 @@
 
 <item itemtype="Connector" uid="btn-ok-gnd" startpinid="Push-4-pinP0" endpinid="Ground-5-Gnd" pointList="-576,220,-636,220,-636,204" />
 
-<item itemtype="Connector" uid="btn-bk-sig" startpinid="Push-5-switch0pinN" endpinid="Mega-1-43" pointList="-544,300,-132,300,-132,16,-104,16" />
-
 <item itemtype="Connector" uid="btn-bk-gnd" startpinid="Push-5-pinP0" endpinid="Ground-6-Gnd" pointList="-576,300,-636,300,-636,284" />
 
 <item itemtype="Connector" uid="luz-sig" startpinid="Mega-1-32" endpinid="Resistor-1-lPin" pointList="-144,24,200,24,200,-120,240,-120" />
@@ -105,5 +103,7 @@
 <item itemtype="Connector" uid="buz-sig" startpinid="Mega-1-31" endpinid="Resistor-4-lPin" pointList="-152,16,176,16,176,120,240,120" />
 
 <item itemtype="Connector" uid="buz-led" startpinid="Resistor-4-rPin" endpinid="Led-4-lPin" pointList="272,120,336,120" />
+
+<item itemtype="Connector" uid="btn-bk-sig" startpinid="Push-5-switch0pinN" endpinid="Mega-1-43" pointList="-544,300,-132,300,-132,16,-104,16" />
 
 </circuit>

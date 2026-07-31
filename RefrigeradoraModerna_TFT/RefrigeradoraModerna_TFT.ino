@@ -86,6 +86,8 @@ bool     prevTimerOn = false, prevTimerDone = false;
 uint8_t  prevMenuPage = 255;
 int      prevBarTemp = -1, prevBarHum = -1;
 bool     prevBlink = false;
+unsigned long lastDisplayUpdate = 0;
+#define DISPLAY_MS 300
 
 // ─── Botones ───────────────────────────────────────────────
 bool btnPushed(int pin, int idx) {
@@ -100,6 +102,14 @@ bool btnPushed(int pin, int idx) {
 void tftCenter(const char* text, int y, int color, int sz) {
   tft.setTextSize(sz);
   tft.setTextColor(color);
+  int w = strlen(text) * 6 * sz;
+  tft.setCursor((240 - w) / 2, y);
+  tft.print(text);
+}
+
+void tftCenterBg(const char* text, int y, int color, int sz, int bg) {
+  tft.setTextSize(sz);
+  tft.setTextColor(color, bg);
   int w = strlen(text) * 6 * sz;
   tft.setCursor((240 - w) / 2, y);
   tft.print(text);
@@ -173,7 +183,7 @@ void setup() {
   Serial.println(F("=== RefrigeradoraModerna TFT v5.0 ==="));
 
   tft.begin();
-  tft.setRotation(1);
+  tft.setRotation(0);
 
   // Splash
   tft.fillScreen(BLACK);
@@ -208,87 +218,97 @@ void setup() {
 // ═══════════════════════════════════════════════════════════
 void enterTemp() {
   tft.fillRect(0, 0, 240, 28, freezeMode ? BLUE : DBLUE);
-  tft.setTextSize(1);
-  tft.setTextColor(WHITE);
   tftCenter(freezeMode ? "MODO CONGELADOR" : "REFRIGERADOR", 10, WHITE, 1);
-  prevTemp = -999; prevTarget = -999;
-  prevCooling = !cooling; prevFreeze = !freezeMode;
-  prevDoor = !doorOpen; prevBarTemp = -1;
+
+  char ts[8]; dtostrf(currentTemp, 4, 1, ts);
+  int tw = (strlen(ts) + 2) * 30;
+  tft.fillRect((240 - tw) / 2, 45, tw + 10, 40, BLACK);
+  tft.setTextSize(5); tft.setTextColor(cooling ? RED : GREEN);
+  tft.setCursor((240 - tw) / 2 + 5, 50);
+  tft.print("T:"); tft.print(ts); tft.print("C");
+
+  tftRect(30, 100, 80, 24, cooling ? RED : DARKGREY);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(40, 108); tft.print("COMP: "); tft.print(cooling ? "ON" : "OFF");
+
+  tftRect(130, 100, 80, 24, freezeMode ? BLUE : GREEN);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(140, 108); tft.print(freezeMode ? "CONGEL" : "FRIDGE");
+
+  char sp[8]; dtostrf(targetTemp, 4, 1, sp);
+  tft.fillRect(20, 135, 120, 20, BLACK);
+  tft.setTextSize(2); tft.setTextColor(CYAN);
+  tft.setCursor(20, 137); tft.print("SP:"); tft.print(sp); tft.print("C");
+
+  tft.fillRect(20, 165, 100, 14, BLACK);
+  tft.setTextSize(1); tft.setTextColor(cooling ? RED : GREEN);
+  tft.setCursor(20, 167); tft.print(cooling ? "[ENFRIANDO]" : "[TEMP OK]");
+
+  tftRect(0, 218, 80, 18, freezeMode ? BLUE : DARKGREY);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(10, 224); tft.print("FREEZE");
+  tftRect(80, 218, 80, 18, cooling ? RED : DARKGREY);
+  tft.setCursor(90, 224); tft.print("COMP");
+  tftRect(160, 218, 80, 18, doorOpen ? ORANGE : DARKGREY);
+  tft.setCursor(170, 224); tft.print("PUERTA");
+
+  prevTemp = currentTemp; prevTarget = targetTemp;
+  prevCooling = cooling; prevFreeze = freezeMode;
+  prevDoor = doorOpen; prevBarTemp = -1;
 }
 
 void updateTemp() {
-  // Título solo si cambia modo
   if (freezeMode != prevFreeze) {
     tft.fillRect(0, 0, 240, 28, freezeMode ? BLUE : DBLUE);
     tftCenter(freezeMode ? "MODO CONGELADOR" : "REFRIGERADOR", 10, WHITE, 1);
-    prevFreeze = freezeMode;
   }
 
-  // Temperatura — solo si cambió
   if (currentTemp != prevTemp) {
-    char ts[8];
-    dtostrf(currentTemp, 4, 1, ts);
+    char ts[8]; dtostrf(currentTemp, 4, 1, ts);
     int tw = (strlen(ts) + 2) * 30;
-    int x = (240 - tw) / 2;
-    tft.fillRect(x, 45, tw + 10, 40, BLACK);
-    tft.setTextSize(5);
-    tft.setTextColor(cooling ? RED : GREEN);
-    tft.setCursor(x + 5, 50);
+    tft.fillRect((240 - tw) / 2, 45, tw + 10, 40, BLACK);
+    tft.setTextSize(5); tft.setTextColor(cooling ? RED : GREEN);
+    tft.setCursor((240 - tw) / 2 + 5, 50);
     tft.print("T:"); tft.print(ts); tft.print("C");
     prevTemp = currentTemp;
   }
 
-  // Compresor — solo si cambió
   if (cooling != prevCooling) {
     tftRect(30, 100, 80, 24, cooling ? RED : DARKGREY);
-    tft.setTextSize(1);
-    tft.setTextColor(WHITE);
-    tft.setCursor(40, 108);
-    tft.print("COMP: "); tft.print(cooling ? "ON" : "OFF");
-    prevCooling = cooling;
+    tft.setTextSize(1); tft.setTextColor(WHITE);
+    tft.setCursor(40, 108); tft.print("COMP: "); tft.print(cooling ? "ON" : "OFF");
   }
 
-  // Modo — solo si cambió
   if (freezeMode != prevFreeze) {
     tftRect(130, 100, 80, 24, freezeMode ? BLUE : GREEN);
-    tft.setTextSize(1);
-    tft.setTextColor(WHITE);
-    tft.setCursor(140, 108);
-    tft.print(freezeMode ? "CONGEL" : "FRIDGE");
+    tft.setTextSize(1); tft.setTextColor(WHITE);
+    tft.setCursor(140, 108); tft.print(freezeMode ? "CONGEL" : "FRIDGE");
   }
 
-  // Setpoint — solo si cambió
   if (targetTemp != prevTarget) {
+    char sp[8]; dtostrf(targetTemp, 4, 1, sp);
     tft.fillRect(20, 135, 120, 20, BLACK);
-    tft.setTextSize(2);
-    tft.setTextColor(CYAN);
-    tft.setCursor(20, 137);
-    tft.print("SP:"); tft.print(targetTemp, 1); tft.print("C");
+    tft.setTextSize(2); tft.setTextColor(CYAN);
+    tft.setCursor(20, 137); tft.print("SP:"); tft.print(sp); tft.print("C");
     prevTarget = targetTemp;
   }
 
-  // Estado — solo si cambió
   if (cooling != prevCooling) {
     tft.fillRect(20, 165, 100, 14, BLACK);
-    tft.setTextSize(1);
-    tft.setTextColor(cooling ? RED : GREEN);
-    tft.setCursor(20, 167);
-    tft.print(cooling ? "[ENFRIANDO]" : "[TEMP OK]");
+    tft.setTextSize(1); tft.setTextColor(cooling ? RED : GREEN);
+    tft.setCursor(20, 167); tft.print(cooling ? "[ENFRIANDO]" : "[TEMP OK]");
   }
 
-  // Alarma puerta — solo si cambió
   if (doorOpen != prevDoor) {
     if (doorOpen) {
       tftRect(0, 185, 240, 24, RED);
       tftCenter("! PUERTA ABIERTA !", 192, WHITE, 1);
     } else {
-      tft.fillRect(0, 185, 240, 24, BLACK);
-      drawBackground();
+      tft.fillRect(0, 185, 240, 24, GROUND2);
     }
     prevDoor = doorOpen;
   }
 
-  // Barra inferior — solo si cambia estado
   if (cooling != prevCooling || freezeMode != prevFreeze || doorOpen != prevDoor) {
     tftRect(0, 218, 80, 18, freezeMode ? BLUE : DARKGREY);
     tft.setTextSize(1); tft.setTextColor(WHITE);
@@ -297,8 +317,19 @@ void updateTemp() {
     tft.setCursor(90, 224); tft.print("COMP");
     tftRect(160, 218, 80, 18, doorOpen ? ORANGE : DARKGREY);
     tft.setCursor(170, 224); tft.print("PUERTA");
-    prevDoor = doorOpen;
   }
+
+  prevFreeze = freezeMode;
+  prevCooling = cooling;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PANTALLA FONDO — solo paisaje, sin datos
+// ═══════════════════════════════════════════════════════════
+void enterBackground() {
+}
+
+void updateBackground() {
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -307,12 +338,17 @@ void updateTemp() {
 void enterClock() {
   tft.fillRect(0, 0, 240, 28, DARKGREY);
   tftCenter("RELOJ", 10, WHITE, 1);
-  prevClkH = 255; prevClkM = 255; prevClkS = 255;
-  prevBlink = !prevBlink;
 
-  // Líneas decorativas
+  char buf[9]; sprintf(buf, "%02d:%02d:%02d", clkH, clkM, clkS);
+  tft.setTextSize(4); tft.setTextColor(WHITE);
+  tft.fillRect(24, 45, 192, 32, BLACK);
+  tft.setCursor(24, 45); tft.print(buf);
+
   tft.fillRect(30, 105, 180, 2, CYAN);
   tft.fillRect(30, 155, 180, 2, CYAN);
+
+  prevClkH = clkH; prevClkM = clkM; prevClkS = clkS;
+  prevBlink = (clkS % 2 == 0);
 }
 
 void updateClock() {
@@ -321,7 +357,6 @@ void updateClock() {
   int startX = 24;
   int y = 45;
 
-  // Horas — solo si cambiaron
   if (clkH != prevClkH) {
     char buf[3]; sprintf(buf, "%02d", clkH);
     tft.setTextSize(4); tft.setTextColor(WHITE);
@@ -330,13 +365,6 @@ void updateClock() {
     prevClkH = clkH;
   }
 
-  // Dos puntos horas (siempre)
-  if (prevClkH == 255) {
-    tft.setTextSize(4); tft.setTextColor(WHITE);
-    tft.setCursor(startX + 48, y); tft.print(":");
-  }
-
-  // Minutos — solo si cambiaron
   if (clkM != prevClkM) {
     char buf[3]; sprintf(buf, "%02d", clkM);
     tft.setTextSize(4); tft.setTextColor(WHITE);
@@ -345,13 +373,6 @@ void updateClock() {
     prevClkM = clkM;
   }
 
-  // Dos puntos minutos (siempre)
-  if (prevClkM == 255) {
-    tft.setTextSize(4); tft.setTextColor(WHITE);
-    tft.setCursor(startX + 120, y); tft.print(":");
-  }
-
-  // Segundos — solo si cambiaron
   if (clkS != prevClkS) {
     char buf[3]; sprintf(buf, "%02d", clkS);
     tft.setTextSize(4); tft.setTextColor(WHITE);
@@ -374,7 +395,35 @@ void updateClock() {
 void enterTimer() {
   tft.fillRect(0, 0, 240, 28, DARKGREY);
   tftCenter("TEMPORIZADOR", 10, WHITE, 1);
-  prevTimerLeft = 0xFFFF; prevTimerOn = !timerOn; prevTimerDone = !timerDone;
+
+  tft.fillRect(20, 40, 200, 130, BLACK);
+
+  if (timerDone) {
+    tftCenterBg("** LISTO! **", 50, YELLOW, 3, BLACK);
+    tftCenterBg("Tiempo completado", 100, WHITE, 1, BLACK);
+    tftRect(40, 130, 160, 28, GREEN);
+    tftCenter("Presione OK para reset", 138, WHITE, 1);
+  } else if (timerOn) {
+    uint16_t m = timerLeft / 60, s = timerLeft % 60;
+    char ts[10]; sprintf(ts, "%02d:%02d", m, s);
+    tft.setTextSize(4); tft.setTextColor(GREEN, BLACK);
+    tft.setCursor(29, 50); tft.print(ts);
+    tftCenterBg("Corriendo...", 100, GREEN, 2, BLACK);
+    int total = timerSet;
+    int elapsed = total - timerLeft;
+    int barW = (total > 0) ? map(elapsed, 0, total, 0, 200) : 0;
+    tftRect(20, 145, 200, 14, DARKGREY);
+    if (barW > 0) tftRect(20, 145, barW, 14, GREEN);
+  } else {
+    uint16_t m = timerSet / 60, s = timerSet % 60;
+    char ts[10]; sprintf(ts, "%02d:%02d", m, s);
+    tft.setTextSize(4); tft.setTextColor(CYAN, BLACK);
+    tft.setCursor(29, 50); tft.print(ts);
+    tftCenterBg("Presione OK para iniciar", 110, LGREY, 1, BLACK);
+  }
+
+  prevTimerLeft = timerOn ? timerLeft : timerSet;
+  prevTimerOn = timerOn; prevTimerDone = timerDone;
   prevBarTemp = -1;
 }
 
@@ -384,30 +433,27 @@ void updateTimer() {
 
   if (timerDone) {
     if (prevTimerDone != timerDone) {
-      tft.fillRect(0, 30, 240, 200, BLACK);
-      tftCenter("** LISTO! **", 50, YELLOW, 3);
-      tftCenter("Tiempo completado", 100, WHITE, 1);
+      tft.fillRect(20, 40, 200, 130, BLACK);
+      tftCenterBg("** LISTO! **", 50, YELLOW, 3, BLACK);
+      tftCenterBg("Tiempo completado", 100, WHITE, 1, BLACK);
       tftRect(40, 130, 160, 28, GREEN);
       tftCenter("Presione OK para reset", 138, WHITE, 1);
       prevTimerDone = timerDone;
     }
   } else if (timerOn) {
-    // Actualizar tiempo solo si cambió
+    if (prevTimerOn != timerOn) {
+      tft.fillRect(20, 40, 200, 130, BLACK);
+    }
     if (timerLeft != prevTimerLeft) {
       tft.setTextSize(4);
-      tft.setTextColor(GREEN);
-      int tw = 8 * 24;
-      int x = (240 - tw) / 2;
-      tft.fillRect(x, 45, tw + 10, 35, BLACK);
-      tft.setCursor(x + 5, 50); tft.print(ts);
+      tft.setTextColor(GREEN, BLACK);
+      tft.setCursor(29, 50); tft.print(ts);
       prevTimerLeft = timerLeft;
 
-      // "Corriendo..." solo la primera vez
       if (prevTimerOn != timerOn) {
-        tftCenter("Corriendo...", 100, GREEN, 2);
+        tftCenterBg("Corriendo...", 100, GREEN, 2, BLACK);
       }
 
-      // Barra de progreso
       int total = timerSet;
       int elapsed = total - timerLeft;
       int barW = (total > 0) ? map(elapsed, 0, total, 0, 200) : 0;
@@ -419,13 +465,13 @@ void updateTimer() {
     }
     prevTimerOn = timerOn;
   } else {
+    if (prevTimerOn != timerOn) {
+      tft.fillRect(20, 40, 200, 130, BLACK);
+    }
     if (timerLeft != prevTimerLeft || prevTimerOn != timerOn) {
-      tft.fillRect(0, 30, 240, 200, BLACK);
-      tft.setTextSize(4); tft.setTextColor(CYAN);
-      int tw = 8 * 24;
-      int x = (240 - tw) / 2;
-      tft.setCursor(x + 5, 50); tft.print(ts);
-      tftCenter("Presione OK para iniciar", 110, LGREY, 1);
+      tft.setTextSize(4); tft.setTextColor(CYAN, BLACK);
+      tft.setCursor(29, 50); tft.print(ts);
+      tftCenterBg("Presione OK para iniciar", 110, LGREY, 1, BLACK);
       prevTimerLeft = timerLeft; prevTimerOn = timerOn;
     }
   }
@@ -437,9 +483,41 @@ void updateTimer() {
 void enterHumidity() {
   tft.fillRect(0, 0, 240, 28, DARKGREY);
   tftCenter("HUMEDAD Y ESTADO", 10, WHITE, 1);
-  prevHumidity = -99; prevBarHum = -1;
-  prevCooling = !cooling; prevDoor = !doorOpen;
-  prevTimerOn = !timerOn;
+
+  char hs[8]; sprintf(hs, "%d%%", (int)humidity);
+  int hw = strlen(hs) * 24;
+  tft.fillRect((240 - hw) / 2 - 5, 40, hw + 20, 35, BLACK);
+  tft.setTextSize(4); tft.setTextColor(CYAN);
+  tft.setCursor((240 - hw) / 2, 45); tft.print(hs);
+
+  int barW = map((int)humidity, 0, 100, 0, 200);
+  tftRect(20, 85, 200, 12, DARKGREY);
+  if (barW > 0) tftRect(20, 85, barW, 12, CYAN);
+
+  tftRect(20, 110, 200, 22, freezeMode ? BLUE : GREEN);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(50, 117);
+  tft.print(freezeMode ? "MODO: CONGELADOR" : "MODO: REFRIGERADOR");
+
+  tftRect(20, 140, 95, 22, cooling ? RED : DARKGREY);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(30, 147);
+  tft.print(cooling ? "COMP: ON" : "COMP: OFF");
+
+  tftRect(125, 140, 95, 22, doorOpen ? ORANGE : GREEN);
+  tft.setTextSize(1); tft.setTextColor(WHITE);
+  tft.setCursor(135, 147);
+  tft.print(doorOpen ? "PTA:ABT" : "PTA:CER");
+
+  tftRect(20, 172, 95, 22, timerOn ? YELLOW : DARKGREY);
+  tft.setTextSize(1);
+  tft.setTextColor(timerOn ? BLACK : WHITE);
+  tft.setCursor(30, 179);
+  tft.print(timerOn ? "TIMER: ON" : "TIMER: OFF");
+
+  prevHumidity = humidity; prevBarHum = barW;
+  prevCooling = cooling; prevFreeze = freezeMode;
+  prevDoor = doorOpen; prevTimerOn = timerOn;
 }
 
 void updateHumidity() {
@@ -505,7 +583,7 @@ void updateHumidity() {
 // ═══════════════════════════════════════════════════════════
 void menuSetpoint() {
   if (prevMenuPage != 6) {
-    tft.fillRect(0, 0, 240, 240, BLACK);
+    tft.fillRect(0, 0, 240, 320, BLACK);
     tftRect(0, 0, 240, 28, YELLOW);
     tftCenter("AJUSTAR SETPOINT", 10, BLACK, 1);
     tftCenter("UP/DOWN: Ajustar", 130, LGREY, 1);
@@ -525,13 +603,13 @@ void menuSetpoint() {
   if (btnPushed(BTN_UP, 0)) { targetTemp = min(15.0f, targetTemp + 0.5f); }
   if (btnPushed(BTN_DOWN, 1)) { targetTemp = max(-10.0f, targetTemp - 0.5f); }
   if (btnPushed(BTN_OK, 2) || btnPushed(BTN_BACK, 3)) {
-    inSub = false; menuPage = 0; prevMenuPage = 255; enterTemp();
+    inSub = false; menuPage = 1; prevMenuPage = 255; enterTemp();
   }
 }
 
 void menuSetClock() {
   if (prevMenuPage != 7) {
-    tft.fillRect(0, 0, 240, 240, BLACK);
+    tft.fillRect(0, 0, 240, 320, BLACK);
     tftRect(0, 0, 240, 28, YELLOW);
     tftCenter(editStep == 0 ? "Ajustar HORA" : "Ajustar MINUTO", 10, BLACK, 1);
     tftCenter("UP/DOWN: Ajustar", 130, LGREY, 1);
@@ -547,8 +625,10 @@ void menuSetClock() {
     tft.setCursor(startX, 60); tft.print(buf);
     prevClkH = clkH;
   }
-  tft.setTextSize(4); tft.setTextColor(WHITE);
-  tft.setCursor(startX + 48, 60); tft.print(":");
+  if (prevClkH == 255) {
+    tft.setTextSize(4); tft.setTextColor(WHITE);
+    tft.setCursor(startX + 48, 60); tft.print(":");
+  }
   if (clkM != prevClkM) {
     char buf[3]; sprintf(buf, "%02d", clkM);
     tft.fillRect(startX + 72, 60, 48, 32, BLACK);
@@ -571,7 +651,7 @@ void menuSetClock() {
       tft.fillRect(0, 0, 240, 28, YELLOW);
       tftCenter("Ajustar MINUTO", 10, BLACK, 1);
     } else {
-      editStep = 0; inSub = false; menuPage = 1; prevMenuPage = 255; enterClock();
+      editStep = 0; inSub = false; menuPage = 2; prevMenuPage = 255; enterClock();
     }
   }
   if (btnPushed(BTN_BACK, 3)) {
@@ -581,7 +661,7 @@ void menuSetClock() {
 
 void menuSetTimer() {
   if (prevMenuPage != 8) {
-    tft.fillRect(0, 0, 240, 240, BLACK);
+    tft.fillRect(0, 0, 240, 320, BLACK);
     tftRect(0, 0, 240, 28, YELLOW);
     tftCenter("AJUSTAR TIMER", 10, BLACK, 1);
     tftCenter("UP/DOWN: Ajustar (1 min)", 130, LGREY, 1);
@@ -590,12 +670,14 @@ void menuSetTimer() {
   }
   uint16_t m = timerSet / 60, s = timerSet % 60;
   char ts[10]; sprintf(ts, "%02d:%02d", m, s);
-  tft.setTextSize(4); tft.setTextColor(CYAN);
-  int tw = 8 * 24;
-  int x = (240 - tw) / 2;
-  tft.fillRect(x, 60, tw + 10, 35, BLACK);
-  tft.setCursor(x + 5, 65); tft.print(ts);
-  prevTimerLeft = timerSet;
+  if (timerSet != prevTimerLeft) {
+    tft.setTextSize(4); tft.setTextColor(CYAN);
+    int tw = 8 * 24;
+    int x = (240 - tw) / 2;
+    tft.fillRect(x, 60, tw + 10, 35, BLACK);
+    tft.setCursor(x + 5, 65); tft.print(ts);
+    prevTimerLeft = timerSet;
+  }
 
   if (btnPushed(BTN_UP, 0)) {
     timerSet = min((uint16_t)5940, (uint16_t)(timerSet + 60));
@@ -606,10 +688,10 @@ void menuSetTimer() {
   if (btnPushed(BTN_OK, 2)) {
     timerLeft = timerSet; timerOn = (timerLeft > 0);
     timerDone = false; lastTimerTick = millis();
-    inSub = false; menuPage = 2; prevMenuPage = 255; enterTimer();
+    inSub = false; menuPage = 3; prevMenuPage = 255; enterTimer();
   }
   if (btnPushed(BTN_BACK, 3)) {
-    inSub = false; menuPage = 2; prevMenuPage = 255; enterTimer();
+    inSub = false; menuPage = 3; prevMenuPage = 255; enterTimer();
   }
 }
 
@@ -625,7 +707,7 @@ void loop() {
   doorOpen    = (digitalRead(DOOR_SENSOR) == LOW);
   freezeMode  = (targetTemp <= 0.0f);
 
-  if (!(inSub && menuPage == 4)) {
+  if (!(inSub && menuPage == 5)) {
     targetTemp = -10.0f + (analogRead(SETPOINT_PIN) / 1023.0f) * 25.0f;
   }
 
@@ -657,49 +739,55 @@ void loop() {
   tickClock();
   tickTimer();
 
-  // ── Menú — solo dibuja fondo al cambiar de pantalla ────
+  // ── Menú — actualiza cada DISPLAY_MS o al cambiar de página ────
   if (inSub) {
     switch (menuPage) {
-      case 4: menuSetpoint(); break;
-      case 5: menuSetClock();  break;
-      case 6: menuSetTimer();  break;
+      case 5: menuSetpoint(); break;
+      case 6: menuSetClock();  break;
+      case 7: menuSetTimer();  break;
       default: inSub = false; break;
     }
   } else {
-    uint8_t oldPage = menuPage;
-    if (btnPushed(BTN_UP, 0))   menuPage = (menuPage + 3) % 4;
-    if (btnPushed(BTN_DOWN, 1)) menuPage = (menuPage + 1) % 4;
+    if (btnPushed(BTN_UP, 0))   { menuPage = (menuPage + 4) % 5; lastDisplayUpdate = 0; }
+    if (btnPushed(BTN_DOWN, 1)) { menuPage = (menuPage + 1) % 5; lastDisplayUpdate = 0; }
 
     if (btnPushed(BTN_OK, 2)) {
+      lastDisplayUpdate = 0;
       switch (menuPage) {
-        case 0: inSub = true; menuPage = 4; break;
-        case 1: inSub = true; menuPage = 5; editStep = 0; break;
-        case 2:
-          if (!timerOn && !timerDone) { inSub = true; menuPage = 6; }
+        case 1: inSub = true; menuPage = 5; break;
+        case 2: inSub = true; menuPage = 6; editStep = 0; break;
+        case 3:
+          if (!timerOn && !timerDone) { inSub = true; menuPage = 7; }
           else { timerOn = false; timerDone = false; timerLeft = timerSet; }
           break;
-        case 3: break;
+        case 0: case 4: break;
       }
     }
 
-    // Si cambió de pantalla, dibujar fondo y entrar
+    // Si cambió de pantalla, dibujar fondo y entrar inmediatamente
     if (menuPage != prevMenuPage) {
       drawBackground();
       switch (menuPage) {
-        case 0: enterTemp();    break;
-        case 1: enterClock();   break;
-        case 2: enterTimer();   break;
-        case 3: enterHumidity(); break;
+        case 0: enterBackground(); break;
+        case 1: enterTemp();       break;
+        case 2: enterClock();      break;
+        case 3: enterTimer();      break;
+        case 4: enterHumidity();   break;
       }
       prevMenuPage = menuPage;
+      lastDisplayUpdate = 0;
     }
 
-    // Actualizar solo lo que cambió
-    switch (menuPage) {
-      case 0: updateTemp();     break;
-      case 1: updateClock();    break;
-      case 2: updateTimer();    break;
-      case 3: updateHumidity(); break;
+    // Actualizar periódicamente (cada DISPLAY_MS) — solo dibuja lo que cambió
+    if (now - lastDisplayUpdate >= DISPLAY_MS) {
+      lastDisplayUpdate = now;
+      switch (menuPage) {
+        case 0: updateBackground(); break;
+        case 1: updateTemp();       break;
+        case 2: updateClock();      break;
+        case 3: updateTimer();      break;
+        case 4: updateHumidity();   break;
+      }
     }
   }
 
@@ -718,5 +806,5 @@ void loop() {
     Serial.print(' '); Serial.println(timerLeft);
   }
 
-  delay(80);
+  delay(20);
 }
